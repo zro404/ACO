@@ -46,4 +46,5 @@ def plot_all_paths():
 
 
 plot_coords()
+plot_all_paths()
 plt.show()
