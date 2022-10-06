@@ -9,6 +9,10 @@ class Ant:
         self.alpha = alpha
         self.beta = beta
 
+        self.possible_nodes = []
+
+        self.first_pass = True
+
         if start:
             self.currentNode = start
         else:
@@ -22,21 +26,28 @@ class Ant:
         dist = math.sqrt(dx**2 + dy**2)
         return dist
 
+    def probablity(self, path, pheromone):
+        pass
+
     def choose_next(self):
         most_probable = (None, 0)
 
-        for path, pheromone in self.pheromoneMap:
+        for path in self.pheromoneMap.keys():
             # check if path starts from current node
-            if path[0] != self.currentNode:
-                continue
+            if path[0] == self.currentNode:
+                self.possible_nodes.append(path)
 
-            p = self.probablity(path)
+        # 50% probablity on first pass
+        if self.first_pass:
+            return random.choice(self.possible_nodes)
 
-            if most_probable[0] == None:
+        for path in self.possible_nodes:
+            p = self.probablity(path, self.nodes[path])
+
+            if most_probable[1] < p:
                 most_probable = (path, p)
 
-    def probablity(self, path):
-        pass
+        return most_probable[0]
 
 
 class AntColony:
