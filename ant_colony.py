@@ -1,15 +1,12 @@
 import math
 import random
 
-
 class Ant:
     def __init__(self, nodes, pheromoneMap, start, alpha, beta) -> None:
         self.nodes = nodes
         self.pheromoneMap = pheromoneMap
         self.alpha = alpha
         self.beta = beta
-
-        self.possible_nodes = []
 
         self.first_pass = True
 
@@ -18,37 +15,37 @@ class Ant:
         else:
             self.currentNode = random.choice(nodes)
 
-        self.choose_next(alpha, beta)
+        self.choose_next()
 
-    def distance(self, c1, c2):
+    def distance(self, path):
+        (c1, c2) = path
         dx = c1[0] - c2[0]
         dy = c1[1] - c2[1]
         dist = math.sqrt(dx**2 + dy**2)
         return dist
 
-    def probablity(self, path, pheromone):
-        pass
 
     def choose_next(self):
-        most_probable = (None, 0)
+        possible_nodes = []
+        weightage_array = []
 
-        for path in self.pheromoneMap.keys():
+        for path, pheromone in self.pheromoneMap:
             # check if path starts from current node
             if path[0] == self.currentNode:
-                self.possible_nodes.append(path)
+                possible_nodes.append(path)
+
+                # calculate weightage of path
+                weightage = (pheromone**self.alpha) * (self.distance(path) ** self.beta)
+                weightage_array.append(path)
+
+        weightage_sum = sum(weightage_array)
 
         # 50% probablity on first pass
         if self.first_pass:
-            return random.choice(self.possible_nodes)
+            return random.choice(possible_nodes)
 
-        for path in self.possible_nodes:
-            p = self.probablity(path, self.nodes[path])
-
-            if most_probable[1] < p:
-                most_probable = (path, p)
-
-        return most_probable[0]
-
+        for path, weightage in zip(self.possible_nodes, weightage_array):
+            pass
 
 class AntColony:
     antArray = []
