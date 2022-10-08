@@ -12,22 +12,26 @@ class Ant(Thread):
         self.beta = beta
 
         self.trip = []
+        self.trip_distance = 0
 
         self.first_pass = True
 
         if start:
-            self.trip[0] = start
+            self.current_node = start
         else:
-            self.trip[0] = random.choice(nodes)
+            self.current_node = random.choice(nodes)
 
     def run(self):
         while True:
             next_path = self.choose_next()
-            self.trip.append(next_path[1])
+            self.trip.append(next_path)
+            self.trip_distance += self.distance(next_path)
+
+            self.current_node = next_path[1]
 
             # trip completion condition
-            if self.trip[-1] == self.trip[0]:
-                break
+            if self.trip[-1][1] == self.trip[0][0]:
+                return self.trip
 
     def distance(self, path):
         (c1, c2) = path
@@ -44,7 +48,7 @@ class Ant(Thread):
 
         for path, pheromone in self.pheromoneMap:
             # check if path starts from current node
-            if path[0] == self.trip[-1]:
+            if path[0] == self.current_node and (path[::-1] not in self.trip):
                 possible_nodes.append(path)
 
                 # calculate weightage of path
@@ -71,6 +75,7 @@ class Ant(Thread):
 class AntColony:
     antArray = []
     pheromoneMap = {}
+    tmpPheromoneMap = {}
 
     def __init__(
         self,
@@ -93,7 +98,9 @@ class AntColony:
 
         # Create all ants
         for _ in range(ant_count):
-            self.antArray.append(Ant(self.nodes, self.pheromoneMap, start, alpha, beta))
+            ant = Ant(self.nodes, self.pheromoneMap, start, alpha, beta)
+            ant.run()
+            self.antArray.append(ant)
 
     def init_pheromone_map(self):
         for i in self.nodes:
@@ -102,3 +109,4 @@ class AntColony:
                     continue
 
                 self.pheromoneMap[(i, j)] = 0
+                self.tmpPheromoneMap[(i, j)] = 0
