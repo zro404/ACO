@@ -5,9 +5,18 @@ from threading import Thread
 
 
 class Ant(Thread):
-    def __init__(self, nodes, pheromoneMap, start, alpha, beta) -> None:
+    def __init__(
+        self,
+        nodes,
+        pheromoneMap,
+        tmpPheromoneMap,
+        start,
+        alpha,
+        beta,
+    ):
         self.nodes = nodes
         self.pheromoneMap = pheromoneMap
+        self.tmpPheromoneMap = tmpPheromoneMap
         self.alpha = alpha
         self.beta = beta
 
@@ -55,7 +64,7 @@ class Ant(Thread):
                 weightage = (pheromone**self.alpha) * (
                     self.distance(path) ** self.beta
                 )
-                weightage_array.append(path)
+                weightage_array.append(weightage)
 
         weightage_sum = sum(weightage_array)
 
@@ -98,9 +107,24 @@ class AntColony:
 
         # Create all ants
         for _ in range(ant_count):
-            ant = Ant(self.nodes, self.pheromoneMap, start, alpha, beta)
-            ant.run()
+            ant = Ant(
+                self.nodes,
+                self.pheromoneMap,
+                self.tmpPheromoneMap,
+                start,
+                alpha,
+                beta,
+                pheromone_constant,
+                pheromone_evaporation_rate,
+            )
             self.antArray.append(ant)
+
+        for _ in range(iterations):
+            for ant in self.antArray:
+                ant.run()
+
+            for ant in self.antArray:
+                ant.join()
 
     def init_pheromone_map(self):
         for i in self.nodes:
