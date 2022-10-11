@@ -13,12 +13,16 @@ class Ant(Thread):
         start,
         alpha,
         beta,
+        pheromone_constant,
+        pheromone_evaporation_rate,
     ):
         self.nodes = nodes
         self.pheromoneMap = pheromoneMap
         self.tmpPheromoneMap = tmpPheromoneMap
         self.alpha = alpha
         self.beta = beta
+        self.pheromone_constant = pheromone_constant
+        self.pheromone_evaporation_rate = pheromone_evaporation_rate
 
         self.trip = []
         self.trip_distance = 0
@@ -40,7 +44,8 @@ class Ant(Thread):
 
             # trip completion condition
             if self.trip[-1][1] == self.trip[0][0]:
-                return self.trip
+                self.pheromone_update()
+                return
 
     def distance(self, path):
         (c1, c2) = path
@@ -79,6 +84,14 @@ class Ant(Thread):
                 most_probable = (path, p)
 
         return most_probable[0]
+
+    def pheromone_update(self):
+        for path in self.trip:
+            pheromone = self.pheromoneMap[path]
+
+            self.pheromoneMap[path] = (
+                1 - self.pheromone_evaporation_rate
+            ) * pheromone - (self.pheromone_constant / self.trip_distance)
 
 
 class AntColony:
@@ -125,6 +138,9 @@ class AntColony:
 
             for ant in self.antArray:
                 ant.join()
+
+            for path in self.pheromoneMap:
+                self.pheromoneMap[path] = self.tmpPheromoneMap[path]
 
     def init_pheromone_map(self):
         for i in self.nodes:
