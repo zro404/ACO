@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import random
 import math
 
+from ant_colony import AntColony
+
 
 plt.style.use("dark_background")
 
@@ -29,7 +31,7 @@ def distance(c1, c2):
     return dist
 
 
-def plot_coords(w=12, h=8):
+def plot_nodes(w=12, h=8):
     for x, y in COORDS:
         plt.plot(x, y, "g.", markersize=15)
     plt.axis("off")
@@ -37,13 +39,22 @@ def plot_coords(w=12, h=8):
     fig.set_size_inches([w, h])
 
 
-def plot_all_paths():
+def plot_all_edges():
     paths = ((a, b) for a in COORDS for b in COORDS)
 
     for a, b in paths:
         plt.plot((a[0], b[0]), (a[1], b[1]))
 
 
-plot_coords()
-plot_all_paths()
+plot_nodes()
+
+colony = AntColony(COORDS)
+
+optimal_edges = colony.create_optimal_path()
+
+for edge in optimal_edges:
+    # print((edge[0][0], edge[0][1]), (edge[1][0], edge[1][1]))
+    plt.plot(edge[0], edge[1])
+    pass
+
 plt.show()
