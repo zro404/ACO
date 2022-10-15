@@ -42,15 +42,21 @@ class Ant(Thread):
             self.trip.append(next_path)
             self.trip_distance += self.distance(next_path)
 
-            self.current_node = next_path[1]
-
             # print(f"agent {self.agent_index}: {next_path}")
 
+            if next_path[0] == self.current_node:
+                self.current_node = next_path[1]
+            elif next_path[1] == self.current_node:
+                self.current_node = next_path[0]
+
+
+            # print(self.trip)
 
             # trip completion condition
-            if self.trip[-1][1] == self.trip[0][0]:
-                self.pheromone_update()
-                return
+            if self.initialNode in self.trip[-1]:
+                if len(self.trip) != 1:
+                    self.pheromone_update()
+                    return
 
 
     def distance(self, path):
@@ -70,8 +76,12 @@ class Ant(Thread):
 
         for path in self.pheromoneMap:
             # check if path starts from current node
-            if path[0] == self.current_node and (path[::-1] not in self.trip):
-                possible_nodes.append(path)
+            
+            if self.current_node in path:
+                if (self.initialNode not in path) or (len(possible_nodes) == 0):
+                    if (path not in self.trip):
+                        print(path)
+                        possible_nodes.append(path)
         
 
         # 50% probablity on first pass
@@ -81,9 +91,6 @@ class Ant(Thread):
 
         for i in range(len(possible_nodes)):
             path = possible_nodes[i]
-
-
-            print(self.trip)
 
             pheromone = self.pheromoneMap[path]
 
@@ -95,7 +102,12 @@ class Ant(Thread):
 
             weightage_array.append(weightage)
 
-            weightage_sum = sum(weightage_array)
+
+        weightage_sum = sum(weightage_array)
+
+        for i in range(len(possible_nodes)):
+            path = possible_nodes[i]
+            weightage = weightage_array[i]
 
             p = weightage / weightage_sum
 
@@ -192,10 +204,15 @@ class AntColony:
 
 
     def init_pheromone_map(self):
+        all_paths = []
         for i in self.nodes:
             for j in self.nodes:
                 if i is j:
                     continue
+                elif ((i,j) in all_paths) or ((j, i) in all_paths):
+                    continue
+
+                all_paths.append((i,j))
 
                 self.pheromoneMap[(i, j)] = 0
                 self.tmpPheromoneMap[(i, j)] = 0
