@@ -53,8 +53,8 @@ colony = AntColony(COORDS, ant_count=1, iterations=1)
 optimal_edges = colony.create_optimal_path()
 
 for edge in optimal_edges:
-    # print((edge[0][0], edge[0][1]), (edge[1][0], edge[1][1]))
-    plt.plot(edge[0], edge[1])
+    plt.plot((edge[0][0], edge[1][0]), (edge[0][1], edge[1][1]))
     pass
+
 
 plt.show()

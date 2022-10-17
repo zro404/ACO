@@ -50,7 +50,8 @@ class Ant(Thread):
                 self.current_node = next_path[0]
 
 
-            # print(self.trip)
+            print(self.trip)
+            print()
 
             # trip completion condition
             if self.initialNode in self.trip[-1]:
@@ -74,14 +75,21 @@ class Ant(Thread):
 
         most_probable = ((), 0)
 
+
         for path in self.pheromoneMap:
             # check if path starts from current node
-            
-            if self.current_node in path:
-                if (self.initialNode not in path) or (len(possible_nodes) == 0):
-                    if (path not in self.trip):
-                        print(path)
-                        possible_nodes.append(path)
+
+            if self.current_node not in path:
+                continue
+
+            if (path not in self.trip):
+                # if (self.initialNode in path) and ((len(self.trip)+1) == len(self.nodes)):
+                possible_nodes.append(path)
+
+                # print(path)
+                        
+
+
         
 
         # 50% probablity on first pass
@@ -233,4 +241,5 @@ class AntColony:
             optimal_path.append(best_path[0])
             current_node = best_path[0][1]
 
-        return optimal_path
+        # return optimal_path
+        return self.antArray[0].trip
