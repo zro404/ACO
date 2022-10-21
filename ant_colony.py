@@ -12,6 +12,7 @@ class Ant(Thread):
         tmpPheromoneMap,
         first_pass,
         start,
+        distance_callback,
         alpha,
         beta,
         pheromone_constant,
@@ -29,43 +30,37 @@ class Ant(Thread):
         self.pheromone_evaporation_rate = pheromone_evaporation_rate
         self.initialNode = start
         self.agent_index = agent_index
+        self.distance = distance_callback
 
         self.first_pass = first_pass
 
     def run(self):
-        self.trip = []
+        self.trip = [self.initialNode]
         self.trip_distance = 0
-        self.current_node = self.initialNode
+        self.currentNode = self.initialNode
 
         while True:
             next_path = self.choose_next()
-            self.trip.append(next_path)
-            self.trip_distance += self.distance(next_path)
 
             # print(f"agent {self.agent_index}: {next_path}")
 
-            if next_path[0] == self.current_node:
-                self.current_node = next_path[1]
-            elif next_path[1] == self.current_node:
-                self.current_node = next_path[0]
+            if next_path[0] == self.currentNode:
+                self.currentNode = next_path[1]
+            else:
+                self.currentNode = next_path[0]
 
+            self.trip.append(self.currentNode)
+            self.trip_distance += self.distance(next_path)
 
-            print(self.trip)
-            print()
+            # print(self.trip)
+            # print()
 
             # trip completion condition
-            if self.initialNode in self.trip[-1]:
+            if self.trip[0] == self.trip[-1]:
                 if len(self.trip) != 1:
                     self.pheromone_update()
                     return
 
-
-    def distance(self, path):
-        (c1, c2) = path
-        dx = c1[0] - c2[0]
-        dy = c1[1] - c2[1]
-        dist = math.sqrt(dx**2 + dy**2)
-        return dist
 
     def choose_next(self):
 
@@ -77,38 +72,41 @@ class Ant(Thread):
 
 
         for path in self.pheromoneMap:
-            # check if path starts from current node
 
-            if self.current_node not in path:
+            if self.currentNode not in path:
                 continue
 
-            if (path not in self.trip):
-                # if (self.initialNode in path) and ((len(self.trip)+1) == len(self.nodes)):
-                possible_nodes.append(path)
+            if path[0] == self.currentNode:
+                next_node = path[1]
+            else:
+                next_node = path[0]
 
-                # print(path)
-                        
+            if next_node in self.trip:
+                if next_node == self.initialNode:
+                    if len(self.trip) == len(self.nodes):
+                        possible_nodes.append(path)
 
+                continue
 
-        
+            possible_nodes.append(path)
+
 
         # 50% probablity on first pass
-        if self.first_pass:
-            choice = random.choice(possible_nodes)
-            return choice
+        # if self.first_pass:
+        #     choice = random.choice(possible_nodes)
+        #     return choice
 
-        for i in range(len(possible_nodes)):
-            path = possible_nodes[i]
-
-            pheromone = self.pheromoneMap[path]
+        for path in possible_nodes:
+            path_distance = self.distance(path)
+            pheromone = (self.pheromone_constant / path_distance)
 
             # calculate weightage of path
             weightage = (pheromone**self.alpha) * (
-                self.distance(path) ** self.beta
+                path_distance ** self.beta
             )
 
-
             weightage_array.append(weightage)
+
 
 
         weightage_sum = sum(weightage_array)
@@ -119,13 +117,19 @@ class Ant(Thread):
 
             p = weightage / weightage_sum
 
+
             if p > most_probable[1]:
                 most_probable = (path, p)
+
 
         return most_probable[0]
 
     def pheromone_update(self):
-        for path in self.trip:
+        for i in range(len(self.trip) - 1):
+            path = (self.trip[i], self.trip[i+1])
+
+            if path not in self.pheromoneMap:
+                path = path[::-1]
 
             pheromone = self.pheromoneMap[path]
 
@@ -133,11 +137,8 @@ class Ant(Thread):
                 1 - self.pheromone_evaporation_rate
             ) * pheromone 
 
-
             self.tmpPheromoneMap[path] += (self.pheromone_constant / self.trip_distance)
 
-        # if self.first_pass:
-        #     print(len(self.tmpPheromoneMap))
 
 class AntColony:
     antArray = []
@@ -164,6 +165,9 @@ class AntColony:
         self.beta = beta
         self.first_pass = True
         self.ant_count = ant_count
+
+        self.bestSeenPath = []
+        self.bestDistance = 0
 
         if start:
             self.start = start
@@ -192,6 +196,9 @@ class AntColony:
                 self.pheromoneMap[path] = self.tmpPheromoneMap[path]
 
 
+            self.create_optimal_path()
+
+
             if self.first_pass:
                 self.first_pass = False
 
@@ -203,6 +210,7 @@ class AntColony:
                 self.tmpPheromoneMap,
                 self.first_pass,
                 self.start,
+                self.distance,
                 self.alpha,
                 self.beta,
                 self.pheromone_constant,
@@ -210,6 +218,12 @@ class AntColony:
                 agent_index
             )
 
+    def distance(self, path):
+        (c1, c2) = path
+        dx = c1[0] - c2[0]
+        dy = c1[1] - c2[1]
+        dist = math.sqrt(dx**2 + dy**2)
+        return dist
 
     def init_pheromone_map(self):
         all_paths = []
@@ -226,20 +240,62 @@ class AntColony:
                 self.tmpPheromoneMap[(i, j)] = 0
 
     def create_optimal_path(self):
-        optimal_path = []
+        optimal_path = [self.start]
+        best_distance = 0
 
         current_node = self.start
 
+        # for _ in range(len(self.nodes)):
+        #     best_path = ((None, None), 0)
+        #     for path in self.pheromoneMap:
+        #
+        #         if path in optimal_path:
+        #             continue
+        #
+        #         if next_node in optimal_path:
+        #             continue
+        #
+        #         if current_node in path:
+        #             pheromone = self.pheromoneMap[path]
+        #             if pheromone > best_path[1]:
+        #                 best_path = (path, pheromone)
+        #
+        #     optimal_path.append(best_path[0])
+        #     
+        #     if best_path[0][0] == current_node:
+        #         current_node = best_path[0][1]
+        #     else:
+        #         current_node = best_path[0][0]
+
         for _ in range(len(self.nodes)):
-            best_path = ((None, None), 0)
+            best_node = (None, 0)
             for path in self.pheromoneMap:
-                if path[0] == current_node:
+                if current_node in path:
+                    if path[0] == current_node:
+                        next_node = path[1]
+                    else:
+                        next_node = path[0]
+
+                    if next_node in optimal_path:
+                        if len(optimal_path) == len(self.nodes):
+                            best_node = (self.start, 0)
+
+                        continue
+
                     pheromone = self.pheromoneMap[path]
-                    if pheromone > best_path[1]:
-                        best_path = (path, pheromone)
 
-            optimal_path.append(best_path[0])
-            current_node = best_path[0][1]
+                    if pheromone > best_node[1]:
+                        best_node = (next_node, pheromone)
 
-        # return optimal_path
-        return self.antArray[0].trip
+            optimal_path.append(best_node[0])
+            best_distance += self.distance((current_node , best_node[0]))
+
+            current_node = best_node[0]
+                    
+        if best_distance > self.bestDistance:
+            self.bestDistance = best_distance
+            self.bestSeenPath = optimal_path
+
+
+    def get_path(self):
+        return self.bestSeenPath

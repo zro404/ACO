@@ -48,13 +48,14 @@ def plot_all_edges():
 
 plot_nodes()
 
-colony = AntColony(COORDS, ant_count=1, iterations=1)
+colony = AntColony(COORDS, ant_count=100, iterations=10)
 
-optimal_edges = colony.create_optimal_path()
+optimal_nodes = colony.get_path()
 
-for edge in optimal_edges:
-    plt.plot((edge[0][0], edge[1][0]), (edge[0][1], edge[1][1]))
-    pass
+# print(optimal_nodes)
+
+for i in range(len(optimal_nodes) - 1):
+    plt.plot((optimal_nodes[i][0], optimal_nodes[i+1][0]), (optimal_nodes[i][1], optimal_nodes[i+1][1]))
 
 
 plt.show()
