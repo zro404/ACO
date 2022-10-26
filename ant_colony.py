@@ -92,17 +92,17 @@ class Ant(Thread):
 
 
         # 50% probablity on first pass
-        # if self.first_pass:
-        #     choice = random.choice(possible_nodes)
-        #     return choice
+        if self.first_pass:
+            choice = random.choice(possible_nodes)
+            return choice
 
         for path in possible_nodes:
             path_distance = self.distance(path)
-            pheromone = (self.pheromone_constant / path_distance)
+            pheromone = self.pheromoneMap[path]
 
             # calculate weightage of path
             weightage = (pheromone**self.alpha) * (
-                path_distance ** self.beta
+                (1/path_distance) ** self.beta
             )
 
             weightage_array.append(weightage)
@@ -133,9 +133,9 @@ class Ant(Thread):
 
             pheromone = self.pheromoneMap[path]
 
-            self.tmpPheromoneMap[path] = (
-                1 - self.pheromone_evaporation_rate
-            ) * pheromone 
+            # self.tmpPheromoneMap[path] = (
+            #     1 - self.pheromone_evaporation_rate
+            # ) * pheromone 
 
             self.tmpPheromoneMap[path] += (self.pheromone_constant / self.trip_distance)
 
@@ -193,7 +193,13 @@ class AntColony:
                 ant.join()
 
             for path in self.pheromoneMap:
-                self.pheromoneMap[path] = self.tmpPheromoneMap[path]
+
+                self.pheromoneMap[path] = (
+                    1 - self.pheromone_evaporation_rate
+                ) * self.pheromoneMap[path] 
+
+                self.pheromoneMap[path] += self.tmpPheromoneMap[path]
+                self.tmpPheromoneMap[path] = 0
 
 
             self.create_optimal_path()
