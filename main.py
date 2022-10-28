@@ -48,7 +48,7 @@ def plot_all_edges():
 
 plot_nodes()
 
-colony = AntColony(COORDS, ant_count=200, iterations=200)
+colony = AntColony(COORDS, ant_count=500, iterations=200)
 
 optimal_nodes = colony.get_path()
 

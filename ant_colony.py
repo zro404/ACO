@@ -99,6 +99,7 @@ class Ant(Thread):
         for path in possible_nodes:
             path_distance = self.distance(path)
             pheromone = self.pheromoneMap[path]
+            # pheromone = self.pheromone_constant / path_distance
 
             # calculate weightage of path
             weightage = (pheromone**self.alpha) * (
@@ -106,7 +107,6 @@ class Ant(Thread):
             )
 
             weightage_array.append(weightage)
-
 
 
         weightage_sum = sum(weightage_array)
@@ -131,11 +131,11 @@ class Ant(Thread):
             if path not in self.pheromoneMap:
                 path = path[::-1]
 
-            pheromone = self.pheromoneMap[path]
 
-            # self.tmpPheromoneMap[path] = (
-            #     1 - self.pheromone_evaporation_rate
-            # ) * pheromone 
+            self.tmpPheromoneMap[path] = (
+                1 - self.pheromone_evaporation_rate
+            ) * self.tmpPheromoneMap[path] 
+
 
             self.tmpPheromoneMap[path] += (self.pheromone_constant / self.trip_distance)
 
@@ -167,7 +167,10 @@ class AntColony:
         self.ant_count = ant_count
 
         self.bestSeenPath = []
-        self.bestDistance = 0
+        self.bestDistance = None
+
+
+        self.distanceArray = []
 
         if start:
             self.start = start
@@ -192,17 +195,25 @@ class AntColony:
             for ant in self.antArray:
                 ant.join()
 
+                if not self.bestDistance:
+                    self.bestDistance = ant.trip_distance
+                
+                if ant.trip_distance <= self.bestDistance:
+                    self.bestDistance = ant.trip_distance
+                    self.bestSeenPath = ant.trip
+
+
             for path in self.pheromoneMap:
 
-                self.pheromoneMap[path] = (
-                    1 - self.pheromone_evaporation_rate
-                ) * self.pheromoneMap[path] 
+                # self.tmpPheromoneMap[path] = (
+                #     1 - self.pheromone_evaporation_rate
+                # ) * self.tmpPheromoneMap[path] 
 
                 self.pheromoneMap[path] += self.tmpPheromoneMap[path]
                 self.tmpPheromoneMap[path] = 0
 
 
-            self.create_optimal_path()
+            # self.create_optimal_path()
 
 
             if self.first_pass:
@@ -245,63 +256,10 @@ class AntColony:
                 self.pheromoneMap[(i, j)] = 0
                 self.tmpPheromoneMap[(i, j)] = 0
 
-    def create_optimal_path(self):
-        optimal_path = [self.start]
-        best_distance = 0
-
-        current_node = self.start
-
-        # for _ in range(len(self.nodes)):
-        #     best_path = ((None, None), 0)
-        #     for path in self.pheromoneMap:
-        #
-        #         if path in optimal_path:
-        #             continue
-        #
-        #         if next_node in optimal_path:
-        #             continue
-        #
-        #         if current_node in path:
-        #             pheromone = self.pheromoneMap[path]
-        #             if pheromone > best_path[1]:
-        #                 best_path = (path, pheromone)
-        #
-        #     optimal_path.append(best_path[0])
-        #     
-        #     if best_path[0][0] == current_node:
-        #         current_node = best_path[0][1]
-        #     else:
-        #         current_node = best_path[0][0]
-
-        for _ in range(len(self.nodes)):
-            best_node = (None, 0)
-            for path in self.pheromoneMap:
-                if current_node in path:
-                    if path[0] == current_node:
-                        next_node = path[1]
-                    else:
-                        next_node = path[0]
-
-                    if next_node in optimal_path:
-                        if len(optimal_path) == len(self.nodes):
-                            best_node = (self.start, 0)
-
-                        continue
-
-                    pheromone = self.pheromoneMap[path]
-
-                    if pheromone > best_node[1]:
-                        best_node = (next_node, pheromone)
-
-            optimal_path.append(best_node[0])
-            best_distance += self.distance((current_node , best_node[0]))
-
-            current_node = best_node[0]
-                    
-        if best_distance > self.bestDistance:
-            self.bestDistance = best_distance
-            self.bestSeenPath = optimal_path
-
+    
 
     def get_path(self):
+        print(self.bestDistance)
+        # print()
+        # print(self.distanceArray)
         return self.bestSeenPath
