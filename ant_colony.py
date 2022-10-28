@@ -17,7 +17,7 @@ class Ant(Thread):
         beta,
         pheromone_constant,
         pheromone_evaporation_rate,
-        agent_index
+        agent_index,
     ):
         Thread.__init__(self)
 
@@ -61,15 +61,12 @@ class Ant(Thread):
                     self.pheromone_update()
                     return
 
-
     def choose_next(self):
-
 
         possible_nodes = []
         weightage_array = []
 
         most_probable = ((), 0)
-
 
         for path in self.pheromoneMap:
 
@@ -90,7 +87,6 @@ class Ant(Thread):
 
             possible_nodes.append(path)
 
-
         # 50% probablity on first pass
         if self.first_pass:
             choice = random.choice(possible_nodes)
@@ -98,16 +94,13 @@ class Ant(Thread):
 
         for path in possible_nodes:
             path_distance = self.distance(path)
-            pheromone = self.pheromoneMap[path]
-            # pheromone = self.pheromone_constant / path_distance
+            # pheromone = self.pheromoneMap[path]
+            pheromone = self.pheromone_constant / path_distance
 
             # calculate weightage of path
-            weightage = (pheromone**self.alpha) * (
-                (1/path_distance) ** self.beta
-            )
+            weightage = (pheromone**self.alpha) * ((1 / path_distance) ** self.beta)
 
             weightage_array.append(weightage)
-
 
         weightage_sum = sum(weightage_array)
 
@@ -117,27 +110,23 @@ class Ant(Thread):
 
             p = weightage / weightage_sum
 
-
             if p > most_probable[1]:
                 most_probable = (path, p)
-
 
         return most_probable[0]
 
     def pheromone_update(self):
         for i in range(len(self.trip) - 1):
-            path = (self.trip[i], self.trip[i+1])
+            path = (self.trip[i], self.trip[i + 1])
 
             if path not in self.pheromoneMap:
                 path = path[::-1]
 
-
             self.tmpPheromoneMap[path] = (
                 1 - self.pheromone_evaporation_rate
-            ) * self.tmpPheromoneMap[path] 
+            ) * self.tmpPheromoneMap[path]
 
-
-            self.tmpPheromoneMap[path] += (self.pheromone_constant / self.trip_distance)
+            self.tmpPheromoneMap[path] += self.pheromone_constant / self.trip_distance
 
 
 class AntColony:
@@ -169,7 +158,6 @@ class AntColony:
         self.bestSeenPath = []
         self.bestDistance = None
 
-
         self.distanceArray = []
 
         if start:
@@ -181,7 +169,7 @@ class AntColony:
         self.init_pheromone_map()
 
         for iter in range(self.iterations):
-            print("iteration: ", iter+1)
+            print("iteration: ", iter + 1)
 
             # Create all ants
             for i in range(self.ant_count):
@@ -191,49 +179,38 @@ class AntColony:
                 self.antArray.append(ant)
                 ant.start()
 
-
             for ant in self.antArray:
                 ant.join()
 
                 if not self.bestDistance:
                     self.bestDistance = ant.trip_distance
-                
+
                 if ant.trip_distance <= self.bestDistance:
                     self.bestDistance = ant.trip_distance
                     self.bestSeenPath = ant.trip
 
-
             for path in self.pheromoneMap:
-
-                # self.tmpPheromoneMap[path] = (
-                #     1 - self.pheromone_evaporation_rate
-                # ) * self.tmpPheromoneMap[path] 
 
                 self.pheromoneMap[path] += self.tmpPheromoneMap[path]
                 self.tmpPheromoneMap[path] = 0
 
-
-            # self.create_optimal_path()
-
-
             if self.first_pass:
                 self.first_pass = False
 
-
     def init_ant(self, agent_index):
-            return Ant(
-                self.nodes,
-                self.pheromoneMap,
-                self.tmpPheromoneMap,
-                self.first_pass,
-                self.start,
-                self.distance,
-                self.alpha,
-                self.beta,
-                self.pheromone_constant,
-                self.pheromone_evaporation_rate,
-                agent_index
-            )
+        return Ant(
+            self.nodes,
+            self.pheromoneMap,
+            self.tmpPheromoneMap,
+            self.first_pass,
+            self.start,
+            self.distance,
+            self.alpha,
+            self.beta,
+            self.pheromone_constant,
+            self.pheromone_evaporation_rate,
+            agent_index,
+        )
 
     def distance(self, path):
         (c1, c2) = path
@@ -248,18 +225,14 @@ class AntColony:
             for j in self.nodes:
                 if i is j:
                     continue
-                elif ((i,j) in all_paths) or ((j, i) in all_paths):
+                elif ((i, j) in all_paths) or ((j, i) in all_paths):
                     continue
 
-                all_paths.append((i,j))
+                all_paths.append((i, j))
 
                 self.pheromoneMap[(i, j)] = 0
                 self.tmpPheromoneMap[(i, j)] = 0
 
-    
-
     def get_path(self):
         print(self.bestDistance)
-        # print()
-        # print(self.distanceArray)
         return self.bestSeenPath
