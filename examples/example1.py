@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import random
 import math
 
-from ant_colony import AntColony
+from aco import AntColony
 
 
 plt.style.use("dark_background")
@@ -48,7 +48,7 @@ def plot_all_edges():
 
 plot_nodes()
 
-colony = AntColony(COORDS, ant_count=200, iterations=200)
+colony = AntColony(COORDS, ant_count=300, iterations=300)
 
 optimal_nodes = colony.get_path()
 

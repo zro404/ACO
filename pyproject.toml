@@ -1,14 +1,21 @@
 [tool.poetry]
-name = "Ant Colony Optimization"
-version = "0.1.0"
-description = ""
+name = "ACO"
+version = "0.2.0"
+description = "Ant Colony Optimization in Python"
 authors = ["Harish <harishhari3112004@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-matplotlib = "^3.6.0"
 
 [tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+
+[tool.poetry.group.examples]
+optional = true
+
+[tool.poetry.group.examples.dependencies]
+matplotlib = "^3.6.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
