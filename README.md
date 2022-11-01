@@ -33,7 +33,7 @@ AntColony(
 )
 ```
 
-### Example Plot
+### Travelling Salesman Problem
 ```python
 import matplotlib.pyplot as plt
 import random
