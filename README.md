@@ -1,3 +1,40 @@
+# Ant Colony Optimization
+
+##### Implementation of the Ant Colony Optimization algorithm in Python
+
+> Currently works on 2D Cartesian coordinate system
+
+## Installation
+
+#### From PyPi
+
+```shell
+pip install aco
+```
+
+#### Using [Poetry](https://python-poetry.org/)
+
+```shell
+poetry add aco
+```
+
+## Usage
+
+```python
+AntColony(
+    nodes,
+    start=None,
+    ant_count=300,
+    alpha=0.5,
+    beta=1.2,
+    pheromone_evaporation_rate=0.40,
+    pheromone_constant=1000.0,
+    iterations=300,
+)
+```
+
+### Example Plot
+```python
 import matplotlib.pyplot as plt
 import random
 
@@ -52,3 +89,14 @@ for i in range(len(optimal_nodes) - 1):
 
 
 plt.show()
+```
+
+![screenshot](screenshot.jpg)
+
+---
+
+#### Reference
+
+- [Wikipedia](https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms)
+
+- [pjmattingly/ant-colony-optimization](https://github.com/pjmattingly/ant-colony-optimization)

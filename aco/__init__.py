@@ -42,7 +42,6 @@ class Ant(Thread):
         while True:
             next_path = self.choose_next()
 
-            # print(f"agent {self.agent_index}: {next_path}")
 
             if next_path[0] == self.currentNode:
                 self.currentNode = next_path[1]
@@ -52,8 +51,6 @@ class Ant(Thread):
             self.trip.append(self.currentNode)
             self.trip_distance += self.distance(next_path)
 
-            # print(self.trip)
-            # print()
 
             # trip completion condition
             if self.trip[0] == self.trip[-1]:
@@ -138,12 +135,12 @@ class AntColony:
         self,
         nodes,
         start=None,
-        ant_count=50,
+        ant_count=300,
         alpha=0.5,
         beta=1.2,
         pheromone_evaporation_rate=0.40,
         pheromone_constant=1000.0,
-        iterations=80,
+        iterations=300,
     ):
 
         self.nodes = nodes
