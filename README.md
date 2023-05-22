@@ -91,7 +91,7 @@ for i in range(len(optimal_nodes) - 1):
 plt.show()
 ```
 
-![screenshot](screenshot.jpg)
+![screenshot](screenshot.png)
 
 ---
 
